@@ -7,7 +7,7 @@ st.set_page_config(page_title="Simulador Lucro Real Trimestral", layout="wide")
 st.markdown("""
     <style>
         p, span, label, input, th, td {
-            font-size: 19px !important;
+            font-size: 17px !important;
         }
         h1 { font-size: 2.3rem !important; }
         h3 { font-size: 1.6rem !important; }
@@ -19,7 +19,7 @@ def formata_br(valor):
     return f"R$ {valor:,.2f}".replace(',', '_').replace('.', ',').replace('_', '.')
 
 st.title("📊 Painel Contábil - Lucro Real Trimestral")
-st.markdown("Estrutura fixa de apuração com IRPJ/CSLL sobre a base de cálculo.")
+st.markdown("Estrutura fixa de apuração com Cronograma de Vencimentos e Totalização.")
 
 # --- 1. ENTRADA DE DADOS ---
 st.header("1. Lançamentos do Período")
@@ -52,7 +52,7 @@ with col_d:
 
 st.divider()
 
-# --- 2. CÁLCULOS TRIBUTÁRIOS ---
+# --- 2. CÁLCULOS ---
 icms_v = (v18*0.18) + (v12*0.12) + (v7*0.07) + (v4*0.04)
 icms_c = (c18*0.18) + (c12*0.12) + (c7*0.07) + (c4*0.04)
 icms_net = icms_v - icms_c
@@ -77,7 +77,11 @@ if base_ir_cs > 0:
 else:
     csll_9 = irpj_15 = irpj_add = 0.0
 
-lucro_liquido = base_ir_cs - (csll_9 + irpj_15 + irpj_add)
+irpj_total = irpj_15 + irpj_add
+lucro_liquido = base_ir_cs - (csll_9 + irpj_total)
+
+# 🚨 SOMA TOTAL DE IMPOSTOS A PAGAR
+total_impostos = max(0, icms_net) + max(0, p_net) + max(0, co_net) + irpj_total + csll_9
 
 # --- 3. EXIBIÇÃO ---
 c1, c2 = st.columns([1, 1.5])
@@ -92,8 +96,18 @@ with c1:
     box("ICMS", icms_net)
     box("PIS", p_net)
     box("COFINS", co_net)
-    box("IRPJ (15% + 10%)", irpj_15 + irpj_add)
-    box("CSLL (9%)", csll_9)
+    box("IRPJ", irpj_total)
+    box("CSLL", csll_9)
+    
+    st.markdown(f"#### **TOTAL DE IMPOSTOS:** {formata_br(total_impostos)}")
+    
+    st.divider()
+    st.markdown("#### 📅 Calendário de Vencimentos")
+    vencimentos = pd.DataFrame({
+        "Imposto": ["ICMS", "PIS", "COFINS", "IRPJ/CSLL"],
+        "Vencimento": ["Dia 20 do mês seguinte", "Dia 25 do mês seguinte", "Dia 25 do mês seguinte", "Último dia útil do mês pós-trimestre"]
+    })
+    st.table(vencimentos)
 
 with c2:
     st.markdown("### 📊 DRE")
