@@ -7,7 +7,7 @@ st.set_page_config(page_title="Simulador Lucro Real Trimestral", layout="wide")
 st.markdown("""
     <style>
         p, span, label, input, th, td {
-            font-size: 17px !important;
+            font-size: 19px !important;
         }
         h1 { font-size: 2.3rem !important; }
         h3 { font-size: 1.6rem !important; }
